@@ -1,7 +1,7 @@
 /* IronPulse cloud sync — Firebase Auth + Cloud Firestore (free Spark plan) */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver,
-  GoogleAuthProvider, OAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword,
   sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc,
   onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -120,17 +120,6 @@ async function google() {
     panel(friendly(e));
   }
 }
-async function microsoft() {
-  const pr = new OAuthProvider('microsoft.com');
-  pr.setCustomParameters({ prompt: 'select_account', tenant: 'consumers' });
-  try { await signInWithPopup(auth, pr); closePanel() }
-  catch (e) {
-    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
-    if (e.code === 'auth/popup-blocked') return panel('Pop-up was blocked. Allow pop-ups for this site, or sign in with email below.');
-    if (e.code === 'auth/account-exists-with-different-credential') return panel('This email is already registered with another sign-in method. Use that method (e.g. email & password).');
-    panel(friendly(e));
-  }
-}
 async function emailAuth(create) {
   const em = document.getElementById('sEm').value.trim(), pw = document.getElementById('sPw').value;
   if (!em || pw.length < 6) return panel('Enter your email and a password of at least 6 characters.');
@@ -169,14 +158,13 @@ function panel(msg = '') {
      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap"><button class="btn p" style="flex:1" onclick="ipSync.now()">⟳ Sync now</button><button class="btn r" onclick="ipSync.out()">Sign out</button></div>`
    : `<div class="note" style="margin-top:12px">Sign in once on each device (phone, iPad, PC). Your data is private to your account.</div>
      <button class="btn v" style="width:100%;margin-top:16px;padding:14px" onclick="ipSync.google()"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg> Continue with Google</button>
-     <button class="btn g" style="width:100%;margin-top:10px;padding:14px" onclick="ipSync.microsoft()"><svg width="18" height="18" viewBox="0 0 23 23"><path fill="#f25022" d="M1 1h10v10H1z"/><path fill="#7fba00" d="M12 1h10v10H12z"/><path fill="#00a4ef" d="M1 12h10v10H1z"/><path fill="#ffb900" d="M12 12h10v10H12z"/></svg> Continue with Microsoft</button>
      <div style="display:flex;align-items:center;gap:10px;margin:18px 0 12px;color:var(--mut);font-size:12px"><i style="flex:1;height:1px;background:var(--line)"></i>or use email<i style="flex:1;height:1px;background:var(--line)"></i></div>
      <div style="display:flex;flex-direction:column;gap:10px"><input class="in" id="sEm" type="email" autocomplete="email" placeholder="Email"><input class="in" id="sPw" type="password" autocomplete="current-password" placeholder="Password (min 6 characters)"></div>
      <div style="display:flex;gap:10px;margin-top:12px"><button class="btn p" style="flex:1" onclick="ipSync.email(false)">Sign in</button><button class="btn g" style="flex:1" onclick="ipSync.email(true)">Create account</button></div>
      <div style="text-align:center;margin-top:10px"><a href="#" onclick="ipSync.reset();return false" style="color:var(--cyan);font-size:12px">Forgot password?</a></div>`}`;
   bg.classList.add('on');
 }
-window.ipSync = { open: () => panel(), close: closePanel, google, microsoft, email: emailAuth, reset, now: () => { S.sent = {}; push() },
+window.ipSync = { open: () => panel(), close: closePanel, google, email: emailAuth, reset, now: () => { S.sent = {}; push() },
   out: async () => { if (await G().confirm({ title: 'Sign out of sync?', msg: 'Your data stays on this device and in the cloud. Changes won’t sync until you sign in again.', ok: 'Sign out', icon: '☁️' })) { await signOut(auth); localStorage.removeItem('ip_linked'); closePanel() } },
   draw: drawChip };
 drawChip();
