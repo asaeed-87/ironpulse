@@ -589,6 +589,11 @@ canvas#conf{position:fixed;inset:0;pointer-events:none;z-index:100}
 header.top{flex-wrap:wrap}
 @media(max-width:820px){header.top .syncChip span:last-child{display:none}header.top .syncChip{padding:9px 11px}}
 @media(display-mode:standalone){body{padding-top:env(safe-area-inset-top)}}
+
+/* toast: fully hidden when idle (no stray green strip on iPhone) */
+.toast{opacity:0;visibility:hidden;pointer-events:none;transform:translateX(-50%) translateY(calc(100% + 160px));transition:transform .45s cubic-bezier(.2,1.4,.4,1),opacity .25s,visibility 0s .45s}
+.toast.on{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0);transition:transform .45s cubic-bezier(.2,1.4,.4,1),opacity .2s,visibility 0s}
+@media(max-width:820px){.toast{bottom:calc(100px + env(safe-area-inset-bottom))}}
 </style>
 </head>
 <body>
